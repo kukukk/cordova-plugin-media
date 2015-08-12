@@ -88,6 +88,10 @@ public class AudioHandler extends CordovaPlugin {
         }
         else if (action.equals("stopRecordingAudio")) {
             this.stopRecordingAudio(args.getString(0));
+        } else if (action.equals("getCurrentAmplitudeAudio")) {
+            float f = this.getCurrentAmplitudeAudio(args.getString(0));
+            callbackContext.sendPluginResult(new PluginResult(status, f));
+            return true;
         }
         else if (action.equals("startPlayingAudio")) {
             String target = args.getString(1);
@@ -255,6 +259,19 @@ public class AudioHandler extends CordovaPlugin {
         if (audio != null) {
             audio.stopRecording();
         }
+    }
+
+    /**
+     * Get current amplitude of recording.
+     * @param id				The id of the audio player
+     * @return 					amplitude
+     */
+    public float getCurrentAmplitudeAudio(String id) {
+        AudioPlayer audio = this.players.get(id);
+        if (audio != null) {
+            return (audio.getCurrentAmplitude());
+        }
+        return 0;
     }
 
     /**

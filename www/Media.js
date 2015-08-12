@@ -139,6 +139,16 @@ Media.prototype.stopRecord = function() {
 };
 
 /**
+ * Get amplitude of audio.
+ */
+Media.prototype.getCurrentAmplitude = function(success, fail) {
+    var me = this;
+    exec(function(p) {
+        success(p);
+    }, fail, "Media", "getCurrentAmplitudeAudio", [this.id]);
+};
+
+/**
  * Release the resources.
  */
 Media.prototype.release = function() {

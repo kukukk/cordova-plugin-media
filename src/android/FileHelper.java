@@ -23,7 +23,7 @@ import android.net.Uri;
 public class FileHelper {
 
     /**
-     * Removes the "file://" prefix from the given URI string, if applicable.
+     * Removes the "file://" and "document://" prefix from the given URI string, if applicable.
      * If the given URI string doesn't have a "file://" prefix, it is returned unchanged.
      *
      * @param uriString the URI string to operate on
@@ -31,6 +31,9 @@ public class FileHelper {
      */
     public static String stripFileProtocol(String uriString) {
         if (uriString.startsWith("file://")) {
+            return Uri.parse(uriString).getPath();
+        }
+        if (uriString.startsWith("documents://")) {
             return Uri.parse(uriString).getPath();
         }
         return uriString;

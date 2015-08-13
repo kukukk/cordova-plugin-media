@@ -24,7 +24,7 @@
 #define HTTP_SCHEME_PREFIX @"http://"
 #define HTTPS_SCHEME_PREFIX @"https://"
 #define CDVFILE_PREFIX @"cdvfile://"
-#define RECORDING_WAV @"wav"
+#define RECORDING_M4A @"m4a"
 
 @implementation CDVSound
 
@@ -38,13 +38,9 @@
     NSString* docsPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
 
     // first check for correct extension
-    if ([[resourcePath pathExtension] caseInsensitiveCompare:RECORDING_WAV] != NSOrderedSame) {
+    if ([[resourcePath pathExtension] caseInsensitiveCompare:RECORDING_M4A] != NSOrderedSame) {
         resourceURL = nil;
-        NSLog(@"Resource for recording must have %@ extension", RECORDING_WAV);
-    } else if ([resourcePath hasPrefix:DOCUMENTS_SCHEME_PREFIX]) {
-        // try to find Documents:// resources
-        filePath = [resourcePath stringByReplacingOccurrencesOfString:DOCUMENTS_SCHEME_PREFIX withString:[NSString stringWithFormat:@"%@/", docsPath]];
-        NSLog(@"Will use resource '%@' from the documents folder with path = %@", resourcePath, filePath);
+        NSLog(@"Resource for recording must have %@ extension", RECORDING_M4A);
     } else if ([resourcePath hasPrefix:CDVFILE_PREFIX]) {
         CDVFile *filePlugin = [self.commandDelegate getCommandInstance:@"File"];
         CDVFilesystemURL *url = [CDVFilesystemURL fileSystemURLWithString:resourcePath];
@@ -53,16 +49,9 @@
             resourceURL = [NSURL URLWithString:resourcePath];
         }
     } else {
-        // if resourcePath is not from FileSystem put in tmp dir, else attempt to use provided resource path
-        NSString* tmpPath = [NSTemporaryDirectory()stringByStandardizingPath];
-        BOOL isTmp = [resourcePath rangeOfString:tmpPath].location != NSNotFound;
-        BOOL isDoc = [resourcePath rangeOfString:docsPath].location != NSNotFound;
-        if (!isTmp && !isDoc) {
-            // put in temp dir
-            filePath = [NSString stringWithFormat:@"%@/%@", tmpPath, resourcePath];
-        } else {
-            filePath = resourcePath;
-        }
+        // try to find Documents:// resources
+        filePath = [NSString stringWithFormat:@"%@/%@", docsPath, resourcePath];
+        NSLog(@"Will use resource '%@' from the documents folder with path = %@", resourcePath, filePath);
     }
 
     if (filePath != nil) {
@@ -85,10 +74,6 @@
         // if it is a http url, use it
         NSLog(@"Will use resource '%@' from the Internet.", resourcePath);
         resourceURL = [NSURL URLWithString:resourcePath];
-    } else if ([resourcePath hasPrefix:DOCUMENTS_SCHEME_PREFIX]) {
-        NSString* docsPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-        filePath = [resourcePath stringByReplacingOccurrencesOfString:DOCUMENTS_SCHEME_PREFIX withString:[NSString stringWithFormat:@"%@/", docsPath]];
-        NSLog(@"Will use resource '%@' from the documents folder with path = %@", resourcePath, filePath);
     } else if ([resourcePath hasPrefix:CDVFILE_PREFIX]) {
         CDVFile *filePlugin = [self.commandDelegate getCommandInstance:@"File"];
         CDVFilesystemURL *url = [CDVFilesystemURL fileSystemURLWithString:resourcePath];
@@ -97,23 +82,9 @@
             resourceURL = [NSURL URLWithString:resourcePath];
         }
     } else {
-        // attempt to find file path in www directory or LocalFileSystem.TEMPORARY directory
-        filePath = [self.commandDelegate pathForResource:resourcePath];
-        if (filePath == nil) {
-            // see if this exists in the documents/temp directory from a previous recording
-            NSString* testPath = [NSString stringWithFormat:@"%@/%@", [NSTemporaryDirectory()stringByStandardizingPath], resourcePath];
-            if ([[NSFileManager defaultManager] fileExistsAtPath:testPath]) {
-                // inefficient as existence will be checked again below but only way to determine if file exists from previous recording
-                filePath = testPath;
-                NSLog(@"Will attempt to use file resource from LocalFileSystem.TEMPORARY directory");
-            } else {
-                // attempt to use path provided
-                filePath = resourcePath;
-                NSLog(@"Will attempt to use file resource '%@'", filePath);
-            }
-        } else {
-            NSLog(@"Found resource '%@' in the web folder.", filePath);
-        }
+        NSString* docsPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+        filePath = [NSString stringWithFormat:@"%@/%@", docsPath, resourcePath];
+        NSLog(@"Will use resource '%@' from the documents folder with path = %@", resourcePath, filePath);
     }
     // if the resourcePath resolved to a file path, check that file exists
     if (filePath != nil) {
@@ -559,7 +530,7 @@
                                             AVNumberOfChannelsKey: @(1),
                                             AVEncoderAudioQualityKey: @(AVAudioQualityMedium)
                                             };
-            audioFile.recorder = [[CDVAudioRecorder alloc] initWithURL:audioFile.resourceURL settings:nil error:&error];
+            audioFile.recorder = [[CDVAudioRecorder alloc] initWithURL:audioFile.resourceURL settings:audioSettings error:&error];
             
             bool recordingSuccess = NO;
             if (error == nil) {

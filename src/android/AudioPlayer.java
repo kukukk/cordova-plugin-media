@@ -98,7 +98,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         this.id = id;
         this.audioFile = file;
         this.recorder = new MediaRecorder();
-        this.tempFile = "/data/data/" + handler.cordova.getActivity().getPackageName() + "/cache/tmprecording.3gp";
+        this.tempFile = handler.cordova.getActivity().getFilesDir() + "/tmprecording.3gp";
     }
 
     /**
@@ -167,7 +167,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         File f = new File(this.tempFile);
 
         if (!file.startsWith("/")) {
-            file = "/data/data/" + handler.cordova.getActivity().getPackageName() + "/cache/" + file;
+            file = handler.cordova.getActivity().getFilesDir() + "/" + file;
         }
 
         String logMsg = "renaming " + this.tempFile + " to " + file;

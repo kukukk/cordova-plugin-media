@@ -240,8 +240,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
             this.player.seekTo(milliseconds);
             Log.d(LOG_TAG, "Send a onStatus update for the new seek");
             sendStatusChange(MEDIA_POSITION, null, (milliseconds / 1000.0f));
-        }
-        else {
+        } else {
             this.seekOnPrepared = milliseconds;
         }
     }
@@ -255,8 +254,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         if (this.state == STATE.MEDIA_RUNNING && this.player != null) {
             this.player.pause();
             this.setState(STATE.MEDIA_PAUSED);
-        }
-        else {
+        } else {
             Log.d(LOG_TAG, "AudioPlayer Error: pausePlaying() called during invalid state: " + this.state.ordinal());
             sendErrorStatus(MEDIA_ERR_NONE_ACTIVE);
         }
@@ -271,8 +269,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
             this.player.seekTo(0);
             Log.d(LOG_TAG, "stopPlaying is calling stopped");
             this.setState(STATE.MEDIA_STOPPED);
-        }
-        else {
+        } else {
             Log.d(LOG_TAG, "AudioPlayer Error: stopPlaying() called during invalid state: " + this.state.ordinal());
             sendErrorStatus(MEDIA_ERR_NONE_ACTIVE);
         }
@@ -298,8 +295,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
             int curPos = this.player.getCurrentPosition();
             sendStatusChange(MEDIA_POSITION, null, (curPos / 1000.0f));
             return curPos;
-        }
-        else {
+        } else {
             return -1;
         }
     }
@@ -314,8 +310,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
     public boolean isStreaming(String file) {
         if (file.contains("http://") || file.contains("https://")) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -338,10 +333,8 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
         // If audio file already loaded and started, then return duration
         if (this.player != null) {
             return this.duration;
-        }
-
-        // If no player yet, then create one
-        else {
+        } else {
+            // If no player yet, then create one
             this.prepareOnly = true;
             this.startPlaying(file);
 
@@ -538,22 +531,19 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
             this.setState(STATE.MEDIA_STARTING);
             this.player.setOnPreparedListener(this);
             this.player.prepareAsync();
-        }
-        else {
+        } else {
             if (file.startsWith("/android_asset/")) {
                 String f = file.substring(15);
                 android.content.res.AssetFileDescriptor fd = this.handler.cordova.getActivity().getAssets().openFd(f);
                 this.player.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
-            }
-            else {
+            } else {
                 File fp = new File(file);
                 if (fp.exists()) {
                     FileInputStream fileInputStream = new FileInputStream(file);
                     this.player.setDataSource(fileInputStream.getFD());
                     fileInputStream.close();
-                }
-                else {
-                    this.player.setDataSource("/data/data/" + handler.cordova.getActivity().getPackageName() + "/cache/" + file);
+                } else {
+                    this.player.setDataSource(handler.cordova.getActivity().getFilesDir() + "/" + file);
                 }
             }
                 this.setState(STATE.MEDIA_STARTING);
@@ -583,8 +573,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
                 JSONObject code = new JSONObject();
                 code.put("code", additionalCode.intValue());
                 statusDetails.put("value", code);
-            }
-            else if (value != null) {
+            } else if (value != null) {
                 statusDetails.put("value", value.floatValue());
             }
         } catch (JSONException e) {
